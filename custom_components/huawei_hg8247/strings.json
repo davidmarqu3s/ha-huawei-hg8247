@@ -1,0 +1,83 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Huawei HG8247",
+        "description": "Router admin login. The router locks the account after 3 failed logins.",
+        "data": {
+          "host": "Host",
+          "username": "Username",
+          "password": "Password"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Re-enter router login",
+        "description": "The router rejected the saved login. Polling has stopped to avoid locking the account.",
+        "data": {
+          "username": "Username",
+          "password": "Password"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "The router rejected the username or password.",
+      "cannot_connect": "Could not log in or read the device table. Close any open router web session and try again."
+    },
+    "abort": {
+      "already_configured": "This router is already set up.",
+      "reauth_successful": "Login updated."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Tracked devices",
+        "description": "Pick the phones to track. Each gets a device tracker that is home while the router reports it online; add it to the matching person.",
+        "data": {
+          "tracked_devices": "Devices"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "rx_power": {
+        "name": "Fibre receive power"
+      },
+      "tx_power": {
+        "name": "Fibre transmit power"
+      },
+      "optic_temperature": {
+        "name": "Optical module temperature"
+      },
+      "optic_voltage": {
+        "name": "Optical module voltage"
+      },
+      "optic_bias_current": {
+        "name": "Optical module bias current"
+      },
+      "cpu": {
+        "name": "CPU usage"
+      },
+      "memory": {
+        "name": "Memory usage"
+      },
+      "last_boot": {
+        "name": "Last boot"
+      },
+      "connected_devices": {
+        "name": "Connected devices"
+      }
+    },
+    "binary_sensor": {
+      "fibre_signal": {
+        "name": "Fibre signal"
+      }
+    },
+    "button": {
+      "reboot": {
+        "name": "Reboot"
+      }
+    }
+  }
+}
