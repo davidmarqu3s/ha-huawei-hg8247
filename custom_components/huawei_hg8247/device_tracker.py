@@ -22,11 +22,17 @@ async def async_setup_entry(
 class HuaweiHG8247Tracker(CoordinatorEntity, ScannerEntity):
     """A device on the router's LAN table, home while the router reports it online."""
 
+
     def __init__(self, coordinator, mac: str, name: str) -> None:
         super().__init__(coordinator)
         self._mac = mac
         self._attr_name = name
         self._attr_unique_id = f"huawei_hg8247_{mac}"
+
+    @property
+    def entity_registry_enabled_default(self) -> bool:
+        # ScannerEntity disables new trackers by default; these were picked by hand.
+        return True
 
     @property
     def _device(self):
