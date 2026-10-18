@@ -4,8 +4,6 @@ Local presence detection, fibre signal and router health for Vodafone Portugal's
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-> **Built for Vodafone Portugal firmware.** It reads the router's Vodafone Portugal pages, tested on the HG8247B7-8N (V5R024C00S114). Other ISPs' firmware for the same router, or other Huawei models, probably need changes; issues with your model and firmware version are welcome.
-
 ## Features
 
 - **Presence without phone battery**: device trackers for the phones you pick, home while the router sees them online, refreshed every 30 s.
