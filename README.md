@@ -1,8 +1,10 @@
 # Huawei HG8247 for Home Assistant
 
-Local presence detection, fibre signal and router health for Huawei HG8247 fibre routers, read from the router's own web interface.
+Local presence detection, fibre signal and router health for Vodafone Portugal's Huawei HG8247 fibre routers, read from the router's own web interface.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
+> **Built for Vodafone Portugal firmware.** It reads the router's Vodafone Portugal pages, tested on the HG8247B7-8N (V5R024C00S114). Other ISPs' firmware for the same router, or other Huawei models, probably need changes; issues with your model and firmware version are welcome.
 
 ## Features
 
@@ -31,7 +33,6 @@ Phones need a fixed Wi-Fi address for tracking to stay matched: on iPhone, Setti
 ## Limitations
 
 - The router allows one admin session at a time, so opening its web page while the integration polls can log you out. Disable the integration while you work in the router's web interface.
-- Tested on the HG8247B7-8N with Vodafone Portugal firmware (V5R024C00S114). Other firmware may use different pages.
 - A phone that sleeps off Wi-Fi shows as away on the router; Home Assistant then falls back to the person's other trackers, such as the Companion app.
 
 ## Development
