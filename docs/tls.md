@@ -1,21 +1,38 @@
-# TLS setup and upgrades
+# HTTPS setup and upgrades
 
-The integration connects over HTTPS. Routers with a certificate trusted by Home Assistant need no extra configuration. For a self-signed or otherwise untrusted certificate, supply its SHA256 fingerprint during setup or under **Configure**.
+Version 0.2.0 requires HTTPS. For routers with a self-signed or otherwise untrusted certificate, copy the certificate’s SHA256 fingerprint into the integration once. Routers with a certificate trusted by Home Assistant need no fingerprint. HTTP-only routers are unsupported.
 
-## Get the certificate fingerprint
+## Upgrade from 0.1.x
 
-From a computer on your trusted home network, replace the address below with your router address:
+1. While connected to your trusted home network, get your router’s fingerprint using either method below. You do not need to sign in to the router.
+2. Update the integration through HACS and restart Home Assistant.
+3. Open **Settings → Devices & services → Huawei HG8247 → Configure**.
+4. Paste the fingerprint into **TLS certificate SHA256 fingerprint** and save.
+
+Your tracked-device choices are preserved. The Configure dialog remains available if the integration cannot connect after the update; its entities may be unavailable until the fingerprint is saved.
+
+For a new installation, enter the fingerprint on the initial setup form alongside the router address and login.
+
+## Get the fingerprint in a browser
+
+1. Open your router’s HTTPS address, usually `https://192.168.1.1`. Replace the address if your router uses a different one.
+2. Open the browser’s certificate viewer. In Firefox, select **Advanced → View Certificate** on the certificate warning page. In Chrome, open **Not secure → Certificate details** beside the address bar; wording can vary by version.
+3. Select the router’s server certificate and copy its **SHA-256 fingerprint**. Use the certificate fingerprint, not a public-key fingerprint or the SHA-1 value.
+
+See the [Firefox certificate-viewer guide](https://support.mozilla.org/en-US/kb/secure-website-certificate) or [Chrome SHA-256 fingerprint instructions](https://support.hpe.com/hpesc/public/docDisplay?docId=sd00004003en_us&docLocale=en_US&page=GUID-F0CCAF44-7B2E-4666-A4DA-25695F23B35F.html) if you cannot find the viewer.
+
+## Get the fingerprint in a terminal
+
+On macOS or Linux with OpenSSL available, replace the address below with your router address:
 
 ```sh
 openssl s_client -connect 192.168.1.1:443 -servername 192.168.1.1 </dev/null 2>/dev/null | openssl x509 -noout -fingerprint -sha256
 ```
 
-Copy the fingerprint after `sha256 Fingerprint=` into **TLS certificate SHA256 fingerprint**. Colons and spaces are accepted.
+Copy only the hexadecimal value after `=`. Colons and spaces are accepted in the Home Assistant field.
 
-This command reads the certificate presented by that address; it does not independently authenticate the router. Enroll the fingerprint only on a trusted network and compare it with the certificate shown in your router administration interface when possible. The integration then checks that exact certificate before sending login credentials.
+## Trust and certificate changes
 
-## Upgrade an existing installation
+Both methods read the certificate presented by that address; they do not independently authenticate the router. Enroll the fingerprint on a trusted network and compare it with an independently known certificate fingerprint when available. The integration then checks that exact certificate before sending login credentials.
 
-Existing installations that used HTTP now require HTTPS. If your router uses an untrusted certificate, open the integration's **Configure** dialog and enter its fingerprint. Device tracking choices remain available even if the integration has not loaded successfully.
-
-A changed certificate causes the connection to fail. Check that you are reaching the intended router, then deliberately replace the fingerprint under **Configure**. Leaving the fingerprint blank uses Home Assistant's normal certificate-authority and hostname validation. HTTP-only routers are unsupported.
+If the certificate changes, the integration stops connecting. Verify the router’s identity before replacing the fingerprint under **Configure**. Leaving the fingerprint blank uses Home Assistant’s normal certificate-authority and hostname validation.
