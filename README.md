@@ -23,7 +23,7 @@ Internet status, public IP and traffic come from Home Assistant's built-in [UPnP
 ## Use
 
 1. Settings → Devices & services → Add integration → **Huawei HG8247**.
-2. Enter the router address (usually `192.168.1.1`) and the admin login from the label on the router.
+2. Enter the router address (usually `192.168.1.1`) and the admin login from the label on the router. For a self-signed HTTPS certificate, enter its SHA256 fingerprint; see [TLS setup and upgrades](docs/tls.md).
 3. Open **Configure** and pick the devices to track, then add each tracker to its person.
 
 Phones need a fixed Wi-Fi address for tracking to stay matched: on iPhone, Settings → Wi-Fi → your network → Private Wi-Fi Address → **Fixed**.

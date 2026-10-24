@@ -26,5 +26,5 @@ class HuaweiHG8247Entity(CoordinatorEntity):
             serial_number=status.serial,
             hw_version=status.hardware_version,
             sw_version=status.software_version,
-            configuration_url=f"http://{entry.data[CONF_HOST]}",
+            configuration_url=f"https://{entry.data[CONF_HOST]}",
         )

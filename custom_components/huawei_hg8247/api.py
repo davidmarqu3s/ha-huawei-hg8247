@@ -134,9 +134,18 @@ class HuaweiHG8247Client:
     authentication failure is raised as HuaweiHG8247AuthError and never retried here.
     """
 
-    def __init__(self, session: aiohttp.ClientSession, host: str, username: str, password: str) -> None:
+    def __init__(self, session: aiohttp.ClientSession, host: str, username: str, password: str, certificate_fingerprint: str | None = None) -> None:
         self._session = session
-        self._base = URL(f"http://{host}")
+        self._base = URL(f"https://{host}")
+        if (self._base.host != host or self._base.user is not None
+                or self._base.path != "/" or self._base.query or self._base.fragment):
+            raise HuaweiHG8247Error("Host must be a hostname or IP address")
+        self._ssl: bool | aiohttp.Fingerprint = True
+        if certificate_fingerprint:
+            fingerprint = certificate_fingerprint.replace(":", "").replace(" ", "")
+            if not re.fullmatch(r"[0-9a-fA-F]{64}", fingerprint):
+                raise HuaweiHG8247Error("Certificate fingerprint must be SHA256 (64 hex digits)")
+            self._ssl = aiohttp.Fingerprint(bytes.fromhex(fingerprint))
         self._username = username
         self._password = password
         self._lock = asyncio.Lock()
@@ -150,11 +159,15 @@ class HuaweiHG8247Client:
             async with self._session.request(
                 method, self._base.join(URL(path)), data=data if method == "POST" else None,
                 headers={"Cookie": self._cookie} if self._cookie else None,
-                allow_redirects=False, timeout=aiohttp.ClientTimeout(total=15),
+                ssl=self._ssl, allow_redirects=False, timeout=aiohttp.ClientTimeout(total=15),
             ) as resp:
+                if 300 <= resp.status < 400:
+                    raise HuaweiHG8247Error("Router redirect refused")
                 resp.raise_for_status()
                 body = (await resp.read()).decode("utf-8-sig", "replace")
                 return body, resp.headers.getall("Set-Cookie", [])
+        except aiohttp.ServerFingerprintMismatch as err:
+            raise HuaweiHG8247Error("Router TLS certificate fingerprint does not match") from err
         except (aiohttp.ClientError, TimeoutError) as err:
             raise HuaweiHG8247Error(f"{path}: {err}") from err
 

@@ -14,7 +14,7 @@ from homeassistant.helpers import selector
 
 from . import create_client
 from .api import HuaweiHG8247AuthError, HuaweiHG8247Error
-from .const import CONF_TRACKED, DEFAULT_HOST, DOMAIN
+from .const import CONF_CERTIFICATE_FINGERPRINT, CONF_TRACKED, DEFAULT_HOST, DOMAIN
 
 
 async def _validate(hass, data: dict) -> str | None:
@@ -40,6 +40,7 @@ class HuaweiHG8247ConfigFlow(ConfigFlow, domain=DOMAIN):
             errors["base"] = error
         schema = vol.Schema({
             vol.Required(CONF_HOST, default=DEFAULT_HOST): str,
+            vol.Optional(CONF_CERTIFICATE_FINGERPRINT): str,
             vol.Required(CONF_USERNAME): str,
             vol.Required(CONF_PASSWORD): selector.TextSelector(
                 selector.TextSelectorConfig(type=selector.TextSelectorType.PASSWORD)
@@ -54,7 +55,7 @@ class HuaweiHG8247ConfigFlow(ConfigFlow, domain=DOMAIN):
         entry = self._get_reauth_entry()
         errors = {}
         if user_input is not None:
-            data = {**entry.data, **user_input}
+            data = {**entry.data, **entry.options, **user_input}
             if not (error := await _validate(self.hass, data)):
                 return self.async_update_reload_and_abort(entry, data=data)
             errors["base"] = error
@@ -77,13 +78,8 @@ class HuaweiHG8247OptionsFlow(OptionsFlow):
 
     async def async_step_init(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         current: dict[str, str] = self.config_entry.options.get(CONF_TRACKED, {})
-        devices = self.config_entry.runtime_data.devices.data
-        if user_input is not None:
-            tracked = {}
-            for mac in user_input[CONF_TRACKED]:
-                dev = devices.get(mac)
-                tracked[mac] = current.get(mac) or (dev.hostname if dev and dev.hostname else mac)
-            return self.async_create_entry(data={CONF_TRACKED: tracked})
+        runtime = getattr(self.config_entry, "runtime_data", None)
+        devices = runtime.devices.data if runtime else {}
 
         def label(mac: str) -> str:
             dev = devices.get(mac)
@@ -93,7 +89,10 @@ class HuaweiHG8247OptionsFlow(OptionsFlow):
             return f"{dev.hostname or 'unnamed'} – {dev.ip} – {mac} – {state}"
 
         macs = sorted(set(devices) | set(current), key=lambda m: (not (devices.get(m) and devices[m].online), label(m).lower()))
+        pin = self.config_entry.options.get(CONF_CERTIFICATE_FINGERPRINT,
+            self.config_entry.data.get(CONF_CERTIFICATE_FINGERPRINT, ""))
         schema = vol.Schema({
+            vol.Optional(CONF_CERTIFICATE_FINGERPRINT, default=pin): str,
             vol.Optional(CONF_TRACKED, default=list(current)): selector.SelectSelector(
                 selector.SelectSelectorConfig(
                     options=[selector.SelectOptionDict(value=m, label=label(m)) for m in macs],
@@ -102,4 +101,20 @@ class HuaweiHG8247OptionsFlow(OptionsFlow):
                 )
             )
         })
+        if user_input is not None:
+            tracked = {}
+            for mac in user_input.get(CONF_TRACKED, current):
+                dev = devices.get(mac)
+                tracked[mac] = current.get(mac) or (dev.hostname if dev and dev.hostname else mac)
+            pin = user_input.get(CONF_CERTIFICATE_FINGERPRINT, "").strip()
+            try:
+                # Validate syntax without logging in; next reload validates the peer.
+                create_client(self.hass, {**self.config_entry.data,
+                    CONF_CERTIFICATE_FINGERPRINT: pin})
+            except HuaweiHG8247Error:
+                return self.async_show_form(step_id="init", data_schema=schema,
+                    errors={CONF_CERTIFICATE_FINGERPRINT: "invalid_fingerprint"})
+            return self.async_create_entry(data={CONF_TRACKED: tracked,
+                CONF_CERTIFICATE_FINGERPRINT: pin})
+
         return self.async_show_form(step_id="init", data_schema=schema)

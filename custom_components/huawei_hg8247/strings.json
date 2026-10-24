@@ -7,7 +7,8 @@
         "data": {
           "host": "Host",
           "username": "Username",
-          "password": "Password"
+          "password": "Password",
+          "certificate_fingerprint": "TLS certificate SHA256 fingerprint"
         }
       },
       "reauth_confirm": {
@@ -32,11 +33,15 @@
     "step": {
       "init": {
         "title": "Tracked devices",
-        "description": "Pick the phones to track. Each gets a device tracker that is home while the router reports it online; add it to the matching person.",
+        "description": "Choose devices to track. For a self-signed certificate, enter its SHA256 fingerprint after verifying it on a trusted network.",
         "data": {
-          "tracked_devices": "Devices"
+          "tracked_devices": "Devices",
+          "certificate_fingerprint": "TLS certificate SHA256 fingerprint"
         }
       }
+    },
+    "error": {
+      "invalid_fingerprint": "Enter 64 hexadecimal digits (colons are optional)."
     }
   },
   "entity": {

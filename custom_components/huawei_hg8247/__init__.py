@@ -17,7 +17,7 @@ from homeassistant.helpers.aiohttp_client import async_create_clientsession
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .api import HuaweiHG8247AuthError, HuaweiHG8247Client, HuaweiHG8247Error, LanDevice, RouterStatus
-from .const import DOMAIN, SCAN_INTERVAL, STATUS_INTERVAL
+from .const import CONF_CERTIFICATE_FINGERPRINT, DOMAIN, SCAN_INTERVAL, STATUS_INTERVAL
 
 _LOGGER = logging.getLogger(__name__)
 PLATFORMS = [Platform.BINARY_SENSOR, Platform.BUTTON, Platform.DEVICE_TRACKER, Platform.SENSOR]
@@ -35,7 +35,7 @@ type HuaweiHG8247ConfigEntry = ConfigEntry[HuaweiHG8247Data]
 
 def create_client(hass: HomeAssistant, data: dict) -> HuaweiHG8247Client:
     session = async_create_clientsession(hass, cookie_jar=aiohttp.DummyCookieJar())
-    return HuaweiHG8247Client(session, data[CONF_HOST], data[CONF_USERNAME], data[CONF_PASSWORD])
+    return HuaweiHG8247Client(session, data[CONF_HOST], data[CONF_USERNAME], data[CONF_PASSWORD], data.get(CONF_CERTIFICATE_FINGERPRINT))
 
 
 def _coordinator(
@@ -56,7 +56,7 @@ def _coordinator(
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: HuaweiHG8247ConfigEntry) -> bool:
-    client = create_client(hass, entry.data)
+    client = create_client(hass, {**entry.data, **entry.options})
     # Both coordinators share the client, whose lock serialises the router's
     # single admin session.
     data = HuaweiHG8247Data(
